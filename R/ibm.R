@@ -86,7 +86,7 @@ ibm <- function(
       .options = furrr::furrr_options(seed = T)
     )
   ) |>
-    dplyr::unnest(cols = bout) |>
+    tidyr::unnest(cols = bout) |>
     dplyr::group_by(pars) |>
     dplyr::summarize(
       std.error = sd(vals, na.rm=T)

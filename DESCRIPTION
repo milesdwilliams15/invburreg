@@ -14,4 +14,5 @@ Imports:
         ggplot2,
         dplyr,
         actuar,
-        stringr
+        stringr,
+        tidyr
