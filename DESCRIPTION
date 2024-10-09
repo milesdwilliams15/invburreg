@@ -4,12 +4,13 @@ Version: 0.0.0.9000
 Authors@R: 
     person("Miles", "Williams", , "https://milesdwilliams15.github.io/", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0192-5542"))
+Maintainer: Miles Williams <williamsmd@denison.edu>
 Description: Inverse Burr models are useful for variables with skewed distributions and especially thick, power-law-like, tails. This package lets you fit an inverse Burr model to some variable of interest using covariates that may condition the shape of this variable's distribution. It also lets you visualize the results.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
-Depends:
+Imports:
         ggplot2,
         dplyr,
         actuar,
