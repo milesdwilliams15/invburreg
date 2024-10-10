@@ -7,6 +7,7 @@
 \method{plot}{ibm}(
   model,
   newdata,
+  xmin = 0,
   xmax = 1000,
   len = 1000,
   add = F,
@@ -17,7 +18,9 @@
 \arguments{
 \item{model}{An object generated via \code{ibm()}.}
 
-\item{newdata}{A dataset with 1 row of values for model covariates.}
+\item{newdata}{A new dataset for plotting. It must have no more than 1 row of values for model covariates.}
+
+\item{xmin}{Default is 0. The minimum level of x to show in the plot.}
 
 \item{xmax}{Default is 1000. The maximum level of x to show in the plot.}
 

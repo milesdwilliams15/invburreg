@@ -28,12 +28,13 @@ ibm <- function(
   x1 <- model.matrix(mu, data)
   x2 <- model.matrix(alpha, data)
   x3 <- model.matrix(theta, data)
+  model_data <- cbind(x1, x2, x3)
   
   ## The likelihood
   inbur_lik <- function(x1, x2, x3, y, pars) {
     b <- matrix(
       data = pars[1:(ncol(x1) + ncol(x2) + ncol(x3))],
-      nrow = length(y),
+      nrow = ncol(x1) + ncol(x2) + ncol(x3),
       ncol = 1
     )
     mu <- exp(x1 %*% b[1:ncol(x1)])
@@ -51,6 +52,10 @@ ibm <- function(
     )
   }
   
+  ## Say the model is being fit
+  cat("\n")
+  cat("...Fitting the model to data...")
+  
   ## Estimation
   optim(
     par = rep(0, len = ncol(x1) + ncol(x2) + ncol(x3)),
@@ -61,6 +66,10 @@ ibm <- function(
     y = y,
     hessian = F
   ) -> opt_out
+  
+  ## Say bootstrapping is happening
+  cat("\n")
+  cat("...Performing", its, "bootstrap iterations...")
   
   ## Bootstrapping
   tibble::tibble(
@@ -92,19 +101,22 @@ ibm <- function(
       std.error = sd(vals, na.rm=T)
     ) -> boot_se
   
+  ## Say it's done
+  cat("\n")
+  cat("...Done!")
+  
   ## Return model output in a tidy tibble
   list(
     out = tibble::tibble(
+      param = c(
+        rep("mu", len = ncol(x1)),
+        rep("alpha", len = ncol(x2)),
+        rep("theta", len = ncol(x3))
+      ),
       term = c(
-        ifelse(rep(ncol(x1) == 1, len = ncol(x1)), 
-               "mu: (Intercept)", 
-               paste0("mu: ", colnames(x1))),
-        ifelse(rep(ncol(x2) == 1, len = ncol(x2)), 
-               "alpha: (Intercept)", 
-               paste0("alpha: ", colnames(x2))),
-        ifelse(rep(ncol(x3) == 1, len = ncol(x3)), 
-               "theta: (Intercept)", 
-               paste0("theta: ", colnames(x3)))
+        colnames(x1),
+        colnames(x2),
+        colnames(x3)
       ),
       estimate = opt_out$par,
       std.error = boot_se$std.error,
@@ -113,6 +125,7 @@ ibm <- function(
         -abs(statistic)
       ) |> round(3)
     ),
+    model_data = model_data,
     logLik = -opt_out$value
   )
 }

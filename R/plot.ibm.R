@@ -7,6 +7,7 @@
 #' @param mu The scale parameter for an inverse Burr model.
 #' @param alpha The first shape parameter for an inverse Burr model.
 #' @param theta The second shape parameter for an inverse Burr model.
+#' @param xmin Default is 0. The minimum level of x to show in the plot.
 #' @param xmax Default is 1000. The maximum level of x to show in the plot.
 #' @param len Default is 1000. The level of granularity for x.
 #' @param add Are you adding a new inverse Burr model to an existing plot? Default is `FALSE`.
@@ -15,6 +16,7 @@
 #' @export
 ll_plot <- function(
     mu, alpha, theta, 
+    xmin = 0,
     xmax = 1000, 
     len = 1000,
     add = F,
@@ -23,7 +25,7 @@ ll_plot <- function(
 ) {
   
   ## X values to be plotted
-  x <- exp(seq(0, log(xmax), len = len))
+  x <- exp(seq(ifelse(xmin <= 0, 0, log(xmin)), log(xmax), len = len))
   
   ## The probability that X > x
   p <- actuar::pinvburr(x, alpha, theta, scale = mu, lower.tail = F)
@@ -76,7 +78,8 @@ ll_plot <- function(
 #' on values for model covariates. 
 #' 
 #' @param model An object generated via `ibm()`.
-#' @param newdata A dataset with 1 row of values for model covariates.
+#' @param newdata A new dataset for plotting. It must have no more than 1 row of values for model covariates.
+#' @param xmin Default is 0. The minimum level of x to show in the plot.
 #' @param xmax Default is 1000. The maximum level of x to show in the plot.
 #' @param len Default is 1000. The level of granularity for x.
 #' @param add Are you adding a new inverse Burr model to an existing plot? Default is `FALSE`.
@@ -86,42 +89,39 @@ ll_plot <- function(
 plot.ibm <- function(
     model, 
     newdata,
+    xmin = 0,
     xmax = 1000,
     len = 1000,
     add = F,
     legend = NULL,
     legend_title = NULL
 ) {
-  
   ## Get the three sets of parameters
   mus <- model$out |> 
-    dplyr::filter(stringr::str_detect(term, "mu: ")) |> 
+    dplyr::filter(param == "mu") |> 
     dplyr::pull(estimate)
   alphas <- model$out|>
-    dplyr::filter(stringr::str_detect(term, "alpha: ")) |>
+    dplyr::filter(param == "alpha") |>
     dplyr::pull(estimate)
   thetas <- model$out |>
-    dplyr::filter(stringr::str_detect(term, "theta: ")) |>
+    dplyr::filter(param == "theta") |>
     dplyr::pull(estimate)
   
   ## Get the names of covariates
   munames <- model$out |> 
-    dplyr::filter(stringr::str_detect(term, "mu: ")) |> 
+    dplyr::filter(param == "mu") |> 
     dplyr::pull(term) 
   alphanames <- model$out|>
-    dplyr::filter(stringr::str_detect(term, "alpha: ")) |>
+    dplyr::filter(param == "alpha") |>
     dplyr::pull(term)
   thetanames <- model$out |>
-    dplyr::filter(stringr::str_detect(term, "theta: ")) |>
+    dplyr::filter(param == "theta") |>
     dplyr::pull(term)
   
   ## Apply the names to the relevant parameters
-  names(mus) <- munames |> 
-    stringr::str_remove_all("mu: ")
-  names(alphas) <- alphanames |> 
-    stringr::str_remove_all("alpha: ")
-  names(thetas) <- thetanames |> 
-    stringr::str_remove_all("theta: ")
+  names(mus) <- munames
+  names(alphas) <- alphanames
+  names(thetas) <- thetanames
   
   ## Compute the parameter fits
   if(length(mus) == 1) {
@@ -150,6 +150,7 @@ plot.ibm <- function(
     theMu,
     theAlpha,
     theTheta,
+    xmin = xmin,
     xmax = xmax,
     add = add,
     len = len,

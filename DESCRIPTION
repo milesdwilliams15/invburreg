@@ -15,4 +15,8 @@ Imports:
         dplyr,
         actuar,
         stringr,
-        tidyr
+        tidyr,
+        furrr
+Depends: 
+    R (>= 2.10)
+LazyData: true

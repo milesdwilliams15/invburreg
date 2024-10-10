@@ -8,6 +8,7 @@ ll_plot(
   mu,
   alpha,
   theta,
+  xmin = 0,
   xmax = 1000,
   len = 1000,
   add = F,
@@ -21,6 +22,8 @@ ll_plot(
 \item{alpha}{The first shape parameter for an inverse Burr model.}
 
 \item{theta}{The second shape parameter for an inverse Burr model.}
+
+\item{xmin}{Default is 0. The minimum level of x to show in the plot.}
 
 \item{xmax}{Default is 1000. The maximum level of x to show in the plot.}
 

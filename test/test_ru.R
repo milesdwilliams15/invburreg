@@ -3,56 +3,75 @@
 
 ## Setup ----
 library(tidyverse)
-library(peacesciencer)
 library(invburreg)
-
-## Data on war size ----
-
-## Start with a country-pairs panel
-create_dyadyears(
-  directed = T,
-  subset_years = 1816:2007
-) |>
-  add_gml_mids() |>
-  add_democracy() |>
-  add_cow_majors() |>
-  add_nmc() -> dt
-
-## Collapse it to the year level
-dt |>
-  filter(gmlmidonset == 1) |>
-  filter(hostlev == 5) |>
-  group_by(ccode1, year, dispnum) |>
-  summarize(
-    fat = unique(fatalpre1) %>%
-      ifelse(. < 0, 0, .),
-    pop = unique(tpop1 * 1e03),
-    dem = unique(polity21),
-    mil = unique(milper1 * 1e03),
-    maj = unique(cowmaj1)
-  ) -> cy
-
-cy |>
-  group_by(ccode1, dispnum) |>
-  mutate(
-    styear = min(year)
-  ) |>
-  filter(styear == year) |>
-  group_by(dispnum, year) |>
-  summarize(
-    n = length(unique(ccode1)),
-    across(fat:maj, ~ sum(.x, na.rm = T))
-  ) |>
-  mutate(
-    dem = dem / n
-  ) -> yd
 
 ## fit an inverse Burr model ----
 
+## use `wars` data object with {inburreg}
+
 ibm(
   outcome = fat,
-  mu = ~ log(pop) + dem + log(1+mil) + maj,
-  alpha = ~ log(pop) + dem + log(1+mil) + maj,
-  theta = ~ log(pop) + dem + log(1+mil) + maj,
-  data = yd
+  mu = ~ pop + mil + maj + dem + post1950,
+  alpha = ~ pop + mil + maj + dem + post1950,
+  theta = ~ pop + mil + maj + dem + post1950,
+  data = wars,
+  its = 2000
 ) -> ft
+
+## plot the coefficients ----
+
+ft$out |>
+  ggplot() +
+  aes(
+    x = estimate,
+    y = term,
+    xmin = estimate - 1.96 * std.error,
+    xmax = estimate + 1.96 * std.error
+  ) +
+  geom_pointrange() +
+  geom_vline(
+    xintercept = 0,
+    lty = 2
+  ) +
+  facet_wrap(~ param)
+
+## plot some outcomes
+plot.ibm(
+  ft,
+  newdata = wars |>
+    ungroup() |>
+    summarize(
+      across(
+        c(pop, mil, maj, dem, post1950),
+        mean
+      ),
+      post1950 = 0
+    ),
+  xmin = min(ydt$fat),
+  xmax = max(ydt$fat),
+  legend = "< 1950"
+)
+plot.ibm(
+  ft,
+  newdata = wars |>
+    ungroup() |>
+    summarize(
+      across(
+        c(pop, mil, maj, dem, post1950),
+        mean
+      ),
+      post1950 = 1
+    ),
+  add = T,
+  legend = "> 1950",
+  xmin = min(ydt$fat),
+  xmax = max(ydt$fat),
+)
+
+ll_plot(
+  50, .1, 10
+)
+ll_plot(
+  5, 0.1, 5,
+  add = T
+)
