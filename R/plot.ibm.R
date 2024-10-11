@@ -86,7 +86,7 @@ ll_plot <- function(
 #' @param legend Default is `NULL`. Do you want to include a legend if adding additional plots? This lets you select the category name for a particular model.
 #' @param legend_title Default is `NULL`. Do you want to provide a custom name for your legend plot?
 #' @export
-plot.ibm <- function(
+plot_ibm <- function(
     model, 
     newdata,
     xmin = 0,
